@@ -303,6 +303,11 @@ public class Pasteleria {
     private static void sonValidosDatosFichero(String datos) throws FileSystemException {
         trazar("SYSTEM: inicio de la validación de los datos.",false);
 
+        int numPasteleros;
+        int tiposDePasteles;
+        int[] pedidos;
+        float[][] tablaCostes;
+
         //Estructura del fichero
         Pattern pattern = Pattern.compile("^(?:[1-9]+)\\n(?:[1-9]+)\\n(?:[1-9]+(?:-[1-9]+)*)\\n(?:(?:[0-9]+(?:\\.[0-9]+)?)+(?: (?:[0-9]+(?:\\.[0-9]+)?)+)*\\n?)+$", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(datos);
@@ -330,6 +335,8 @@ public class Pasteleria {
         else
             throw new FileSystemException("ERROR: no se ha introducido correctamente el número de pasteleros => "+arrayDatos[0]);
 
+        numPasteleros = Integer.parseInt(arrayDatos[0]);
+
         //Número de tipos de pasteles
         pattern = Pattern.compile("^[1-9]+$");
         matcher = pattern.matcher(arrayDatos[1]);
@@ -339,27 +346,33 @@ public class Pasteleria {
         else
             throw new FileSystemException("ERROR: no se ha introducido correctamente el número de tipos de pasteles => "+arrayDatos[1]);
 
+        tiposDePasteles = Integer.parseInt(arrayDatos[1]);
+
         //Datos de los pasteleros
-        if(arrayDatos.length-3 != Integer.parseInt(arrayDatos[0]))
-            throw new FileSystemException("ERROR: no se ha introducido correctamente los datos de los pasteleros, deberia haber solo "+Integer.parseInt(arrayDatos[0])+" lineas => "+arrayDatos[0]);
+        if(arrayDatos.length-3 != numPasteleros)
+            throw new FileSystemException("ERROR: no se ha introducido correctamente los datos de los pasteleros, debería haber solo "+numPasteleros+" lineas => "+arrayDatos[0]);
 
         pattern = Pattern.compile("^(?:[0-9]+(?:\\.[0-9]+)?)+(?: (?:[0-9]+(?:\\.[0-9]+)?)+)*$");
+        tablaCostes = new float[numPasteleros][tiposDePasteles];
 
         for (int i=3; i<arrayDatos.length; i++) {
             matcher = pattern.matcher(arrayDatos[i]);
 
             if(!matcher.find())
-                throw new FileSystemException("ERROR: la estructura de los datos del pastelero "+(i-2)+" son erróneos => "+arrayDatos[i]);
+                throw new FileSystemException("ERROR: la estructura de los datos de costes del pastelero "+(i-2)+" son erróneos => "+arrayDatos[i]);
 
-            String[] pastelero = arrayDatos[i].split(" ");
+            String[] costes = arrayDatos[i].split(" ");
 
-            if(pastelero.length > Integer.parseInt(arrayDatos[1]))
-                throw new FileSystemException("ERROR: la estructura de los datos del pastelero "+(i-2)+" contiene mas datos que tipos de pasteles => "+arrayDatos[i]);
+            if(costes.length > tiposDePasteles)
+                throw new FileSystemException("ERROR: los costes por pastel del pastelero "+(i-2)+" contiene mas datos que tipos de pasteles => "+arrayDatos[i]);
+
+            for (int k=0; k<costes.length; k++)
+                tablaCostes[i-3][k] = Float.parseFloat(costes[k]);
         }
 
         trazar("SYSTEM: los datos de los pasteleros son correctos.",false);
 
-        //Pedido
+        //Pedidos
         pattern = Pattern.compile("^[1-9]+(?:-[1-9]+)*$");
         matcher = pattern.matcher(arrayDatos[2]);
 
@@ -369,57 +382,24 @@ public class Pasteleria {
             throw new FileSystemException("ERROR: el pedido no está correctamente estructurado => "+arrayDatos[2]);
 
         String[] strPedidos = arrayDatos[2].split("-");
-        int[] pedidos = new int[strPedidos.length];
+        pedidos = new int[strPedidos.length];
 
-        if(pedidos.length > Integer.parseInt(arrayDatos[0]))
-            throw new FileSystemException("ERROR: el número de pedidos ("+ pedidos.length+") es superior al número de pasteleros ("+arrayDatos[0]+"");
+        if(pedidos.length > numPasteleros)
+            throw new FileSystemException("ERROR: el número de pedidos ("+ pedidos.length+") es superior al número de pasteleros ("+numPasteleros+"");
 
         int i=0;
         int pedido;
-        int tipoMax = Integer.parseInt(arrayDatos[1]);
 
         for (String tipoPast: strPedidos) {
             pedido = Integer.parseInt(tipoPast);
 
-            if (pedido > tipoMax)
+            if (pedido > tiposDePasteles)
                 throw new FileSystemException("ERROR: se ha incluido entre los pedidos un tipo de pastel (" + tipoPast + ") no existente.");
 
             pedidos[i] = pedido;
             i++;
         }
 
-
-        /*
-        //El número de objetos coincide con lo indicado en la primera línea
-        if(arrayDatos.length-2 == Integer.parseInt(arrayDatos[0]))
-            trazar("SYSTEM: el número de objetos es coherente con lo indicado.",false);
-        else
-            throw new FileSystemException("ERROR: el número de objetos no cuadra con lo indicado => indicado:"+arrayDatos[0]+" <> recuento:"+(arrayDatos.length-2));
-
-        //Datos mochila
-        int cantidadObjetos    = arrayDatos.length-2;
-        float capacidadMochila = Float.parseFloat(arrayDatos[arrayDatos.length-1]);
-        float[] pesos          = new float[cantidadObjetos];
-        float[] beneficios     = new float[cantidadObjetos];
-
-        //Comprobar validez de objetos
-        pattern = Pattern.compile("^([0-9]+(?:\\.[0-9]+)?) ([0-9]+(?:\\.[0-9]+)?)$", Pattern.MULTILINE);
-
-        for(int i=1; i<=cantidadObjetos; i++){
-            matcher = pattern.matcher(arrayDatos[i]);
-            if(!matcher.find()) {
-                throw new FileSystemException("ERROR: el objeto "+(arrayDatos[i])+" no tiene el formato correcto.");
-            }
-            else {
-                String[] grupo = matcher.group().split(" ");
-                pesos[i-1]      = Float.parseFloat(grupo[0]);
-                beneficios[i-1] = Float.parseFloat(grupo[1]);
-            }
-        }
-
-        //Inicializar mochila
-        mochila = new Mochila(cantidadObjetos, pesos, beneficios, capacidadMochila);
-        */
         trazar("SYSTEM: datos correctos. Fin de validación de los datos.\n",false);
     }
 
@@ -458,6 +438,7 @@ public class Pasteleria {
         int numPasteleros    = 0;
         int tiposDePasteles  = 0;
         ArrayList<Integer> pedidos = new ArrayList<>();
+        float[][] tablaCostes;
 
         //Número de pasteleros
         while(entradaErronea) {
@@ -511,14 +492,27 @@ public class Pasteleria {
             }
         }
 
-        //Inicializamos la mochila
-        //mochila = new Mochila(cantidad, pesos, beneficios, capacidad);
+        //Datos de los pasteleros
+        int i = 0;
+        int k = 0;
+        tablaCostes = new float[numPasteleros][tiposDePasteles];
 
-        //trazar("SYSTEM: los datos de la mochila son => ",false);
-        //trazar("objetos: "+mochila.getCantidadObjetos(),false);
-        //for (int e=0; e<mochila.getCantidadObjetos(); e++)
-        //    trazar("peso: "+mochila.getPesosBeneficios()[e].peso+" beneficio: "+mochila.getPesosBeneficios()[e].beneficio,false);
-        //trazar("capacidad: "+mochila.getCapacidad(),false);
+        while(i < numPasteleros){
+            try {
+                while(k < tiposDePasteles) {
+                    System.out.println("SYSTEM: introduzca el coste de pastel "+(k+1)+" para el pastelero "+(i+1));
+                    float coste = entrada.nextFloat();
+                    if (coste <= 0) throw new Exception("ERROR: coste menor o igual a cero.");
+                    tablaCostes[i][k] = coste;
+                    System.out.println("SYSTEM: se ha introducido el coste "+coste+" para el paste "+(k+1)+" del pastelero "+(i+1));
+                    k++;
+                    entrada.nextLine();
+                }
+                i++;
+            } catch (Exception e) {
+                decidirSiFinalizarEjecucion(entrada, e);
+            }
+        }
 
         trazar("SYSTEM: fin de entrada por teclado.\n",false);
     }
