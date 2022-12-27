@@ -2,8 +2,10 @@ package pasteleria;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
@@ -43,6 +45,16 @@ public class Pasteleria {
      * Indica si se han activado las trazas.
      */
     static boolean trazasActivas = false;
+
+    /**
+     * Tabla de costes pastel-pastelero
+     */
+    static float[][] tablaDeCostes;
+
+    /**
+     * Lista de pedidos
+     */
+    static int[] pedidos;
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.ENGLISH);
@@ -305,7 +317,6 @@ public class Pasteleria {
 
         int numPasteleros;
         int tiposDePasteles;
-        int[] pedidos;
         float[][] tablaCostes;
 
         //Estructura del fichero
@@ -370,6 +381,8 @@ public class Pasteleria {
                 tablaCostes[i-3][k] = Float.parseFloat(costes[k]);
         }
 
+        tablaDeCostes = tablaCostes;
+
         trazar("SYSTEM: los datos de los pasteleros son correctos.",false);
 
         //Pedidos
@@ -425,6 +438,34 @@ public class Pasteleria {
     }
 
     /**
+     * Escribe en el fichero indicado en los argumentos de inicio de programa. Si no existe el fichero se creará y se
+     * escribirá en un nuevo fichero de salida llamado "salida_pasteleria.txt".
+     * @param salida datos a escribir en el fichero de salida.
+     * @throws IOException cuando no es posible escribir en el fichero.
+     */
+    private static void escribirFichero(String salida) throws IOException {
+        String path;
+        FileOutputStream fos;
+
+        if(existeFicheroSalida)
+            path = ficheroSalida;
+        else
+            path = System.getProperty("user.dir")+"\\"+"salida_pasteleria.txt";
+
+        fos = new FileOutputStream(path,true);
+
+        String datos = "";
+        datos += ("\n.................... ");
+        datos += (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()));
+        datos += (" ....................\n");
+        datos += ("Salida producto de la ejecución de mochila_voraz:\n");
+        datos += (salida);
+
+        fos.write(datos.getBytes());
+        fos.close();
+    }
+
+    /**
      * Verifica que la entrada por teclado es válida.
      * @throws IOException cuando se da un error en la entrada de datos.
      */
@@ -437,7 +478,7 @@ public class Pasteleria {
         boolean entradaErronea = true;
         int numPasteleros    = 0;
         int tiposDePasteles  = 0;
-        ArrayList<Integer> pedidos = new ArrayList<>();
+        ArrayList<Integer> peds = new ArrayList<>();
         float[][] tablaCostes;
 
         //Número de pasteleros
@@ -477,13 +518,13 @@ public class Pasteleria {
         while(entradaErronea) {
             try {
                 System.out.println("SYSTEM: introduzca un pedido:");
-                pedidos.add(entrada.nextInt());
+                peds.add(entrada.nextInt());
                 if(tiposDePasteles <= 0) throw new Exception("ERROR: no ha introducido un número entero mayor a cero.");
                 System.out.println("SYSTEM: número de tipos de pasteles => "+tiposDePasteles);
                 entrada.nextLine();
                 System.out.println("SYSTEM: ¿desea introducir otro pedido? Pulse S");
                 temp = entrada.nextLine();
-                if(pedidos.size() == numPasteleros || !temp.equalsIgnoreCase("S")){
+                if(peds.size() == numPasteleros || !temp.equalsIgnoreCase("S")){
                     entradaErronea = false;
                     System.out.println("SYSTEM: ha alcanzado el máximo de pedido o no desea introducir mas pedidos.");
                 }
@@ -491,6 +532,10 @@ public class Pasteleria {
                 decidirSiFinalizarEjecucion(entrada, e);
             }
         }
+
+        pedidos = new int[peds.size()];
+        for(int i=0; i<pedidos.length; i++)
+            pedidos[i] = peds.get(i);
 
         //Datos de los pasteleros
         int i = 0;
@@ -514,6 +559,8 @@ public class Pasteleria {
             }
         }
 
+        tablaDeCostes = tablaCostes;
+
         trazar("SYSTEM: fin de entrada por teclado.\n",false);
     }
 
@@ -533,6 +580,56 @@ public class Pasteleria {
             throw new IOException("ERROR: se ha interrumpido la entrada de datos, se finaliza la ejecución del programa.\n");
         }
         entrada.nextLine();
+    }
+
+    /**
+     * Cálculo de la estimación optimista partiendo del coste de los pedidos ya asignados.
+     * @param tabla_costes tabla de costes de la elaboración de cada pastel por cada pastelero.
+     * @param pedidos lista de los pedidos.
+     * @param num_nodo número del nodo a partir del cual calcular la estimación.
+     * @param coste coste de los pedidos ya asignados.
+     * @return
+     */
+    private static float estimacionOpt(float[][] tabla_costes, int[] pedidos, int num_nodo, float coste){
+
+        float estimacion = coste, menorCoste;
+
+        for(int i=num_nodo+1; i<pedidos.length; i++){
+            menorCoste = tabla_costes[0][pedidos[i]];
+
+            for(int j=2; i<pedidos.length; i++)
+                if(menorCoste > tabla_costes[j][pedidos[i]])
+                    menorCoste = tabla_costes[j][pedidos[i]];
+
+            estimacion += menorCoste;
+        }
+
+        return estimacion;
+    }
+
+    /**
+     * Cálculo de la estimación pesimista partiendo del coste de los pedidos ya asignados.
+     * @param tabla_costes tabla de costes de la elaboración de cada pastel por cada pastelero.
+     * @param pedidos lista de los pedidos.
+     * @param num_nodo número del nodo a partir del cual calcular la estimación.
+     * @param coste coste de los pedidos ya asignados.
+     * @return
+     */
+    private static float estimacionPes(float[][] tabla_costes, int[] pedidos, int num_nodo, float coste){
+
+        float estimacion = coste, menorCoste;
+
+        for(int i=num_nodo+1; i<pedidos.length; i++){
+            menorCoste = tabla_costes[0][pedidos[i]];
+
+            for(int j=2; i<pedidos.length; i++)
+                if(menorCoste < tabla_costes[j][pedidos[i]])
+                    menorCoste = tabla_costes[j][pedidos[i]];
+
+            estimacion += menorCoste;
+        }
+
+        return estimacion;
     }
 
 }
