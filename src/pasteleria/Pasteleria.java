@@ -83,6 +83,9 @@ public class Pasteleria {
                 esEntradaPorTecladoValida();
             }
 
+            System.out.println("OPTIMISTA: "+estimacionOpt(tablaDeCostes,pedidos,0,0));
+            System.out.println("PESIMISTA: "+estimacionPes(tablaDeCostes,pedidos,0,0));
+
             //Se resuelve el problema de la mochila con objetos fraccionable
             //Mochila.ResultadoMochila[] resultado = mochila.mochilaObjetosFraccionables(mochila);
 
@@ -594,12 +597,12 @@ public class Pasteleria {
 
         float estimacion = coste, menorCoste;
 
-        for(int i=num_nodo+1; i<pedidos.length; i++){
-            menorCoste = tabla_costes[0][pedidos[i]];
+        for(int i=num_nodo; i<pedidos.length; i++){
+            menorCoste = tabla_costes[0][pedidos[i]-1];
 
-            for(int j=2; i<pedidos.length; i++)
-                if(menorCoste > tabla_costes[j][pedidos[i]])
-                    menorCoste = tabla_costes[j][pedidos[i]];
+            for(int k=1; k<pedidos.length; k++)
+                if (menorCoste > tabla_costes[k][pedidos[i] - 1])
+                    menorCoste = tabla_costes[k][pedidos[i] - 1];
 
             estimacion += menorCoste;
         }
@@ -619,12 +622,12 @@ public class Pasteleria {
 
         float estimacion = coste, mayorCoste;
 
-        for(int i=num_nodo+1; i<pedidos.length; i++){
-            mayorCoste = tabla_costes[0][pedidos[i]];
+        for(int i=num_nodo; i<pedidos.length; i++){
+            mayorCoste = tabla_costes[0][pedidos[i]-1];
 
-            for(int j=2; i<pedidos.length; i++)
-                if(mayorCoste < tabla_costes[j][pedidos[i]])
-                    mayorCoste = tabla_costes[j][pedidos[i]];
+            for(int k=1; k<pedidos.length; k++)
+                if(mayorCoste < tabla_costes[k][pedidos[i]-1])
+                    mayorCoste = tabla_costes[k][pedidos[i]-1];
 
             estimacion += mayorCoste;
         }
