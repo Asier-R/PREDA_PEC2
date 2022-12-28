@@ -617,19 +617,31 @@ public class Pasteleria {
      */
     private static float estimacionPes(float[][] tabla_costes, int[] pedidos, int num_nodo, float coste){
 
-        float estimacion = coste, menorCoste;
+        float estimacion = coste, mayorCoste;
 
         for(int i=num_nodo+1; i<pedidos.length; i++){
-            menorCoste = tabla_costes[0][pedidos[i]];
+            mayorCoste = tabla_costes[0][pedidos[i]];
 
             for(int j=2; i<pedidos.length; i++)
-                if(menorCoste < tabla_costes[j][pedidos[i]])
-                    menorCoste = tabla_costes[j][pedidos[i]];
+                if(mayorCoste < tabla_costes[j][pedidos[i]])
+                    mayorCoste = tabla_costes[j][pedidos[i]];
 
-            estimacion += menorCoste;
+            estimacion += mayorCoste;
         }
 
         return estimacion;
     }
+
+}
+
+/**
+ * Clase creada exprofeso para ser un nodo en el árbol implícito del algoritmo de ramificación y poda que resuelve el
+ * problema de la pastelería.
+ * UNED PREDA 2022/2023 - PEC2 - Oracle OpenJDK version 19.
+ * @author Asier Rodríguez López
+ * @version 1.0
+ * @since 1.0
+ */
+class Nodo {
 
 }
