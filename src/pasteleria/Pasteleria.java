@@ -47,12 +47,12 @@ public class Pasteleria {
     static boolean trazasActivas = false;
 
     /**
-     * Tabla de costes pastel-pastelero
+     * Tabla de costes de elaboración de cada pastel por cada pastelero.
      */
     static float[][] tablaDeCostes;
 
     /**
-     * Lista de pedidos
+     * Lista de pedidos.
      */
     static int[] pedidos;
 
@@ -83,8 +83,13 @@ public class Pasteleria {
                 esEntradaPorTecladoValida();
             }
 
-            System.out.println("OPTIMISTA: "+estimacionOpt(tablaDeCostes,pedidos,0,0));
-            System.out.println("PESIMISTA: "+estimacionPes(tablaDeCostes,pedidos,0,0));
+            //System.out.println("OPTIMISTA: "+estimacionOpt(tablaDeCostes,pedidos,0,0));
+            //System.out.println("PESIMISTA: "+estimacionPes(tablaDeCostes,pedidos,0,0));
+
+            int[] pedidos_sol = new int[0];
+            float costeT_sol = 0f;
+
+            int[] resultado =  asignaPasteleros(tablaDeCostes,pedidos,pedidos_sol,costeT_sol);
 
             //Se resuelve el problema de la mochila con objetos fraccionable
             //Mochila.ResultadoMochila[] resultado = mochila.mochilaObjetosFraccionables(mochila);
@@ -586,6 +591,26 @@ public class Pasteleria {
     }
 
     /**
+     * Crea un literal a partir del contenido de un array.
+     * @param nodo array a partir del cual crear un literal.
+     */
+    private static String instantanea(Nodo nodo){
+        String datos = "pasteleros:{";
+        for(int i=0; i<nodo.pasteleros.length; i++)
+            datos += nodo.pasteleros[i]+(i==nodo.pasteleros.length-1?"":",");
+        datos += "}  ";
+
+        datos += "booAsignados:{";
+        for(int i=0; i<nodo.booAsignados.length; i++)
+            datos += nodo.pasteleros[i]+(i==nodo.pasteleros.length-1?"":",");
+        datos += "}  ";
+
+        datos += "costeTotal:"+nodo.costeTotal+"   estOpt:"+nodo.estOpt+"   numNodo:"+nodo.numNodo;
+
+        return datos;
+    }
+
+    /**
      * Cálculo de la estimación optimista partiendo del coste de los pedidos ya asignados.
      * @param tabla_costes tabla de costes de la elaboración de cada pastel por cada pastelero.
      * @param pedidos lista de los pedidos.
@@ -635,6 +660,75 @@ public class Pasteleria {
         return estimacion;
     }
 
+    /**
+     * Algoritmo voraz para la asignación de pasteleros a cada pedido con coste mínimo.
+     * @param tabla_costes tabla de costes de elaboración de cada pastel por cada pastelero.
+     * @param pedidos lista de pedidos.
+     * @return array solución del algoritmo voraz, donde en la posición j del pedido está el pastelero i que lo elabora.
+     */
+    public static int[] asignaPasteleros(float[][] tabla_costes, int[] pedidos, int[] pasteleros_sol, float costeT_sol){
+        trazar("SYSTEM: inicio de algoritmo de asignación de pasteleros a pedidos.",false);
+        trazar("SYSTEM: se inician variables y el primer nodo.",false);
+        Monticulo<Nodo> montC = new Monticulo<>(new Nodo());
+        Nodo[] monticulo = montC.getMonticulo();
+        Nodo nodo = new Nodo(pedidos.length);
+        Nodo hijo;
+        float cota, estPes;
+
+        monticulo[0] = nodo;
+        trazar("SYSTEM: se ha insertado el primer nodo en el montículo",false);
+
+        nodo.estOpt = estimacionOpt(tabla_costes,pedidos,nodo.numNodo,nodo.costeTotal);
+        trazar("SYSTEM: la estimación optimista del primer nodo es: "+nodo.estOpt,false);
+
+        cota = estimacionPes(tabla_costes,pedidos,nodo.numNodo,nodo.costeTotal);
+        trazar("SYSTEM: la cota es: "+cota,false);
+
+        //Mientas el montículo no este vacío y la estimación optimista del primer elemento del montículo sea <= cota
+        while( (!montC.elMonticuloEstaVacio(monticulo))
+                &&
+                (montC.mostrarCima(monticulo).estOpt <= cota)
+              )
+        {
+            nodo = montC.mostrarCima(monticulo);
+            hijo = new Nodo();
+            hijo.numNodo      = nodo.numNodo+1;
+            hijo.pasteleros   = nodo.pasteleros.clone();
+            hijo.booAsignados = nodo.booAsignados.clone();
+
+            for(int i=0; i<pedidos.length; i++){
+                if( !hijo.booAsignados[i] ){
+                    trazar("SYSTEM: no hay pastelero asignado para el pedido "+i+" del nodo "+hijo.numNodo,false);
+                    hijo.pasteleros[hijo.numNodo] = i;
+                    hijo.booAsignados[i] = true;
+                    hijo.costeTotal = nodo.costeTotal + tabla_costes[i][pedidos[hijo.numNodo]];
+                    trazar("SYSTEM: instantánea del nodo hijo "+hijo.numNodo+" => "+instantanea(hijo),false);
+
+                    if( hijo.numNodo == i ){
+
+                        if( cota >= hijo.costeTotal ){
+                            pasteleros_sol = hijo.pasteleros;
+                            costeT_sol     = hijo.costeTotal;
+                            cota           = hijo.costeTotal;
+                        }
+
+                    }
+                    else //Solución no completa
+                    {
+
+
+
+                    }
+
+                }
+            }
+        }
+
+
+        return montC.mostrarCima(monticulo).pasteleros;
+    }
+
+
 }
 
 /**
@@ -645,6 +739,83 @@ public class Pasteleria {
  * @version 1.0
  * @since 1.0
  */
-class Nodo {
+class Nodo implements Comparable<Nodo>{
 
+    /**
+     * Pasteleros asignados a cada pedido.
+     */
+    int[] pasteleros;
+
+    /**
+     * Pasteleros disponibles=F u ocupados=T
+     */
+    boolean[] booAsignados;
+
+    /**
+     * Número de nodo.
+     */
+    int numNodo;
+
+    /**
+     * Coste total en este nodo.
+     */
+    float costeTotal;
+
+    /**
+     * Estimación optimista en este nodo.
+     */
+    float estOpt;
+
+    /**
+     * Constructor vacío.
+     */
+    public Nodo(){
+        this.numNodo      = 0;
+        this.costeTotal   = 0f;
+        this.estOpt       = 0f;
+    }
+
+    /**
+     * Constructor que inicializa a ceros las variables de clase.
+     * @param tamano_pedidos cantidad de pedidos realizados.
+     */
+    public Nodo(int tamano_pedidos){
+        this.pasteleros   = new int[tamano_pedidos];
+        this.booAsignados = new boolean[tamano_pedidos];
+        this.numNodo      = 0;
+        this.costeTotal   = 0f;
+        this.estOpt       = 0f;
+        for(int i=0; i<tamano_pedidos; i++){
+            this.pasteleros[i]   = 0;
+            this.booAsignados[i] = false;
+        }
+    }
+
+    /**
+     * Constructor encargado de informar los datos del nodo.
+     * @param pasteleros pasteleros asignados a cada pedido.
+     * @param booAsignados pasteleros disponibles=0 u ocupados=1.
+     * @param numNodo número de nodo.
+     * @param costeTotal coste total en este nodo.
+     * @param estOpt estimación optimista en este nodo.
+     */
+    public Nodo(int[] pasteleros, boolean[] booAsignados, int numNodo, float costeTotal, float estOpt){
+        this.pasteleros   = pasteleros;
+        this.booAsignados = booAsignados;
+        this.numNodo      = numNodo;
+        this.costeTotal   = numNodo;
+        this.estOpt       = estOpt;
+    }
+
+    /**
+     * Método encargado de comparar dos objetos distintos.
+     * Se compara el parámetro de entrada contra el nodo que llama a la función para obtener un orden inverso en el
+     * montículo (de máximos).
+     * @param nodo objeto a comparar.
+     * @return número entero positivo si el objeto es menor al comparado, cero si son iguales y positivo si es menor.
+     */
+    @Override
+    public int compareTo(Nodo nodo) {
+        return Float.compare(nodo.costeTotal,this.costeTotal);
+    }
 }

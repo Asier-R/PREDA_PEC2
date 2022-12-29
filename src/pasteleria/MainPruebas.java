@@ -11,6 +11,7 @@ public class MainPruebas {
             Pasteleria.main(new String[] {"-t","-h",fichero,ficheroSal});
 
 
+
         }catch(Exception e){
             System.out.println(e.getMessage());
             e.printStackTrace();
