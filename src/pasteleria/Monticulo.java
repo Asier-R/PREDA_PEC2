@@ -1,26 +1,23 @@
 package pasteleria;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 /**
- * Clase que representa la estructura de datos "Montículo de máximos".
+ * Clase que representa la estructura de datos "Montículo de máximos". En esta nueva se utiliza arraylist en lugar de
+ * array.
  * UNED PREDA 2022/2023 - PEC2 - Oracle OpenJDK version 19.
  * @author Asier Rodríguez López
- * @version 1.0
+ * @version 2.0
  * @since 1.0
  * @param <T> Tipo de clase que se utilizará con el Montículo. Debe de ser de tipo Comparable.
  */
 public class Monticulo <T extends Comparable<T>>{
 
     /**
-     * Variable auxiliar utilizada para poder instanciar un array utilizando genéricos.
-     */
-    private final T clase;
-
-    /**
      * Variable array que contendrá el montículo de tipo T.
      */
-    private T[] vector;
+    private ArrayList<T> vector;
 
     /**
      * Si no se dispone de un array se inicializa la clase y el montículo vacío.
@@ -28,7 +25,6 @@ public class Monticulo <T extends Comparable<T>>{
      * @param clase instancia de la clase Comparable que se va a utilizar para crear el montículo.
      */
     public Monticulo(T clase){
-        this.clase = clase;
         this.vector = crearMonticuloVacio();
     }
 
@@ -36,22 +32,22 @@ public class Monticulo <T extends Comparable<T>>{
      * Transforma el array de entrada en un montículo.
      * El tamaño máximo no puede ser menor al del array de entrada.
      * @see Monticulo#creaMonticuloLineal
-     * @param clase instancia de la clase Comparable que se va a utilizar para crear el montículo.
      * @param vector vector sobre el cual se va a crear el montículo.
      * @throws IllegalArgumentException si el vector de entrada tiene un tamaño menor a cero.
      */
-    public Monticulo (T clase, T[] vector){
-        if(vector.length < 1 ) throw new IllegalArgumentException("ERROR: el tamaño del montículo no puede ser menor a 1.");
-        this.clase = clase;
+    public Monticulo (ArrayList<T> vector){
+        if(vector == null)     throw new IllegalArgumentException("ERROR: el vector no puede ser nulo.");
+        if(vector.size() < 1 ) throw new IllegalArgumentException("ERROR: el tamaño del vector no puede ser menor a 1.");
         //Crea el montículo
         creaMonticuloLineal(vector);
+        this.vector = vector;
     }
 
     /**
      * Devuelve el montículo creado en el constructor de un solo parámetro.
      * @return montículo generado en el constructor.
      */
-    public T[] getMonticulo(){
+    public ArrayList<T> getMonticulo(){
         return this.vector;
     }
 
@@ -64,8 +60,8 @@ public class Monticulo <T extends Comparable<T>>{
      * @return una nueva instancia de un montículo vacío.
      */
     @SuppressWarnings("unchecked")
-    public T[] crearMonticuloVacio(){
-        return (T[]) Array.newInstance(clase.getClass(),1);
+    public ArrayList<T> crearMonticuloVacio(){
+        return new ArrayList<T>();
     }
 
     /**
@@ -79,9 +75,9 @@ public class Monticulo <T extends Comparable<T>>{
      * @return una nueva instancia de un montículo de tamaño n.
      */
     @SuppressWarnings("unchecked")
-    public T[] crearMonticuloVacio(int tamano){
+    public ArrayList<T> crearMonticuloVacio(int tamano){
         if(tamano < 1 ) throw new IllegalArgumentException("ERROR: el tamaño del montículo no puede ser menor a 1.");
-        return (T[]) Array.newInstance(clase.getClass(),tamano);
+        return new ArrayList<T>(tamano);
     }
 
     /**
@@ -90,10 +86,8 @@ public class Monticulo <T extends Comparable<T>>{
      * @param monticulo montículo que se inspeccionará para ver si está vacío.
      * @return true si montículo vacío.
      */
-    public boolean elMonticuloEstaVacio(T[] monticulo){
-        if(monticulo.length == 0) return true;
-        for (T t : monticulo) if (t != null) return false;
-        return true;
+    public boolean elMonticuloEstaVacio(ArrayList<T> monticulo){
+        return monticulo.size() == 0;
     }
 
     /**
@@ -107,11 +101,11 @@ public class Monticulo <T extends Comparable<T>>{
      * @param monticulo montículo sobre el que se realizará la acción flotar.
      * @param elemento posición en el montículo del elemento sobre el que se realizará la acción flotar.
      */
-    public void flotar(T[] monticulo, int elemento){
+    public void flotar(ArrayList<T> monticulo, int elemento){
         int hijo  = elemento;
         int padre = elemento/2;
         //compareTO => negativo: menor    cero: igual    positivo: mayor
-        while(hijo>0 && monticulo[padre].compareTo(monticulo[hijo])<0){
+        while(hijo>0 && monticulo.get(padre).compareTo(monticulo.get(hijo))<0){
             intercambiar(padre, hijo, monticulo);
             hijo = padre;
             padre = hijo/2;
@@ -129,7 +123,7 @@ public class Monticulo <T extends Comparable<T>>{
      * @param monticulo montículo sobre el que se realizará la acción hundir.
      * @param elemento posición en el montículo del elemento sobre el que se realizará la acción hundir.
      */
-    public void hundir(T[] monticulo, int elemento){
+    public void hundir(ArrayList<T> monticulo, int elemento){
         int hijoIZQ;
         int hijoDRC;
         int padre = -1;
@@ -141,13 +135,11 @@ public class Monticulo <T extends Comparable<T>>{
             padre = i;
 
             //compareTO => negativo: menor    cero: igual    positivo: mayor
-            if ((hijoDRC < monticulo.length) )
-                if(monticulo[hijoDRC] != null)
-                    if((monticulo[i] == null) || (monticulo[hijoDRC].compareTo(monticulo[i]) > 0)) i = hijoDRC;
+            if ((hijoDRC < monticulo.size()) )
+                if(monticulo.get(hijoDRC).compareTo(monticulo.get(i)) > 0) i = hijoDRC;
 
-            if ((hijoIZQ < monticulo.length))
-                if(monticulo[hijoIZQ] != null)
-                    if((monticulo[i] == null) || (monticulo[hijoIZQ].compareTo(monticulo[i]) > 0)) i = hijoIZQ;
+            if ((hijoIZQ < monticulo.size()))
+                if(monticulo.get(hijoIZQ).compareTo(monticulo.get(i)) > 0) i = hijoIZQ;
 
             intercambiar(padre, i, monticulo);
         }
@@ -160,31 +152,28 @@ public class Monticulo <T extends Comparable<T>>{
      * @param b posición en el montículo del segundo elemento.
      * @param monticulo montículo sobre el que se realiza el intercambio.
      */
-    private void intercambiar(int a, int b, T[] monticulo){
-        T temp = monticulo[a];
-        monticulo[a] = monticulo[b];
-        monticulo[b] = temp;
+    private void intercambiar(int a, int b, ArrayList<T> monticulo){
+        T temp = monticulo.get(a);
+        monticulo.set(a,monticulo.get(b));
+        monticulo.set(b,temp);
     }
 
     /**
      * Inserta un elemento en el montículo y lo flota hasta restaurar la propiedad de montículo.
      * Complejidad temporal lineal O(n). No se añaden espacios (nulos) adicionales al montículo para simplificar el
      * algoritmo de flotar y hundir. Aunque esto implica que siempre que se inserta un elemento se hace en un tiempo O(n).
-     * @see Monticulo#crearMonticuloVacio(int) 
+     * @see Monticulo#crearMonticuloVacio(int)
      * @see Monticulo#flotar
      * @param elemento elemento a insertar en montículo.
      * @param monticulo montículo sobre el que se realiza la acción insertar.
      * @throws IllegalArgumentException si el elemento a insertar es nulo.
      * @return montículo de tamaño n+1 con el elemento nuevo.
      */
-    public T[] insertar(T elemento, T[] monticulo){
+    public void insertar(T elemento, ArrayList<T> monticulo){
         if(elemento == null) throw new IllegalArgumentException("ERROR: no se puede insertar un elemento nulo.");
-        T[] vTemp = crearMonticuloVacio(monticulo.length+1);
-        System.arraycopy(monticulo,0,vTemp,0,monticulo.length); //Complejidad temporal: O(n)
-        vTemp[vTemp.length-1] = elemento;
-        flotar(vTemp, vTemp.length-1);
-        monticulo = vTemp;
-        return monticulo;
+        if(monticulo == null) throw new IllegalArgumentException("ERROR: el montículo es nulo.");
+        monticulo.add(elemento);
+        flotar(monticulo, monticulo.size()-1);
     }
 
     /**
@@ -193,8 +182,8 @@ public class Monticulo <T extends Comparable<T>>{
      * @param monticulo montículo sobre el que se realizará la acción mostrarCima.
      * @return primer elemento del montículo.
      */
-    public T mostrarCima(T[] monticulo){
-        return monticulo[0];
+    public T mostrarCima(ArrayList<T> monticulo){
+        return monticulo.get(0);
     }
 
     /**
@@ -205,12 +194,12 @@ public class Monticulo <T extends Comparable<T>>{
      * @param monticulo montículo sobre el que se realizará la acción obtenerCima.
      * @return cima del montículo.
      */
-    public T obtenerCima(T[] monticulo){
+    public T obtenerCima(ArrayList<T> monticulo){
         T cima = mostrarCima(monticulo); //Guardamos la cima O(1)
         //Se elimina cima, se pone el último elemento en cabeza y se recompone montículo con hundir.
-        monticulo[0] = monticulo[monticulo.length-1];
-        monticulo[monticulo.length-1] = null;
-        hundir(monticulo,0); // O(log(n))
+        monticulo.set(0,monticulo.get(monticulo.size()-1));
+        monticulo.remove(monticulo.size()-1);
+        if(monticulo.size()>1) hundir(monticulo,0); // O(log(n))
         return cima;
     }
 
@@ -220,8 +209,8 @@ public class Monticulo <T extends Comparable<T>>{
      * @see Monticulo#hundir
      * @param vector array sobre el que se realizará la acción creaMonticuloLineal.
      */
-    public void creaMonticuloLineal(T[] vector){
-        for(int i=( (vector.length-1)/2 ); i>=0;i--)
+    public void creaMonticuloLineal(ArrayList<T> vector){
+        for(int i=( (vector.size()-1)/2 ); i>=0;i--)
             hundir(vector, i);
     }
 
@@ -233,16 +222,15 @@ public class Monticulo <T extends Comparable<T>>{
      * @param vector vector sobre el que se realizará la acción heapShort.
      * @throws IllegalArgumentException si el vector de entrada es de tamaño menor a uno.
      */
-    public void heapSort(T[] vector){
-        if(vector.length < 1 ) throw new IllegalArgumentException("ERROR: el tamaño del vector no puede ser menor a 1.");
-        T cima;
-        T[] clon = vector.clone(); // O(1)
-        creaMonticuloLineal(clon); // O(n)
+    public void heapSort(ArrayList<T> vector){
+        if(vector == null)     throw new IllegalArgumentException("ERROR: el vector no puede ser nulo.");
+        if(vector.size() < 1 ) throw new IllegalArgumentException("ERROR: el tamaño del vector no puede ser menor a 1.");
 
-        for(int i=0; i<vector.length; i++){ // Bucle O(n) + obtenerCima O(log(n)) = O(n*log(n))
-            cima = obtenerCima(clon); // O(log(n))
-            vector[i] = cima;
-        }
+        ArrayList<T> clon = (ArrayList<T>) vector.clone();
+        creaMonticuloLineal(vector); // O(n)
+
+        for(int i=0; i<vector.size(); i++) // Bucle O(n) + obtenerCima O(log(n)) = O(n*log(n))
+            vector.set(i,obtenerCima(clon));
     }
 
 }
