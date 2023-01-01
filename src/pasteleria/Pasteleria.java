@@ -56,6 +56,16 @@ public class Pasteleria {
      */
     static int[] pedidos;
 
+    /**
+     * Solución producida por el algoritmo de ramificación y poda.
+     */
+    static int[] pasteleros_sol;
+
+    /**
+     * Coste total de la solución producida por el algoritmo de ramificación y poda.
+     */
+    static float costeT_sol;
+
     public static void main(String[] args) {
         Locale.setDefault(Locale.ENGLISH);
 
@@ -83,16 +93,9 @@ public class Pasteleria {
                 esEntradaPorTecladoValida();
             }
 
-            //System.out.println("OPTIMISTA: "+estimacionOpt(tablaDeCostes,pedidos,0,0));
-            //System.out.println("PESIMISTA: "+estimacionPes(tablaDeCostes,pedidos,0,0));
+            // 11 // System.out.println("OPTIMISTA: "+estimacionOpt(tablaDeCostes,pedidos,0,0));
+            // 35 // System.out.println("PESIMISTA: "+estimacionPes(tablaDeCostes,pedidos,0,0));
 
-            int[] pedidos_sol = new int[0];
-            float costeT_sol = 0f;
-
-            int[] resultado =  asignaPasteleros(tablaDeCostes,pedidos,pedidos_sol,costeT_sol);
-
-            //Se resuelve el problema de la mochila con objetos fraccionable
-            //Mochila.ResultadoMochila[] resultado = mochila.mochilaObjetosFraccionables(mochila);
 
             //Salida de datos
             //StringBuilder salida = new StringBuilder();
@@ -103,10 +106,22 @@ public class Pasteleria {
 
             //if(!existeFicheroSalida) System.out.println("\nSYSTEM: resultado\n"+salida);
             //else escribirFichero(salida.toString());
-            System.out.println("FIIIIIIIIIIIIIN");
         } catch (Exception iae) {
             gestionarMensajeError(iae);
         }
+
+        pasteleros_sol = new int[0];
+        costeT_sol  = 0f;
+
+        asignaPasteleros(tablaDeCostes,pedidos);
+
+        String salida = "";
+        for (int i=0; i<pasteleros_sol.length; i++) {
+            salida += pasteleros_sol[i]+(i==pasteleros_sol.length-1?"":"-");
+        }
+
+        System.out.println("FIN-SALIDA: pedidos_sol{"+salida+"}  coste:"+costeT_sol);
+
     }
 
     /**
@@ -140,7 +155,7 @@ public class Pasteleria {
      */
     private static void mostrarAyuda(){
         String h = """    
-                        \nSINTAXIS: mochila_voraz [-t] [-h] [fichero_entrada] [fichero_salida]
+                        \nSINTAXIS: pasteleria [-t] [-h] [fichero_entrada] [fichero_salida]
                                 -t: traza cada paso de manera que se describa la aplicación del algoritmo utilizado.
                                 -h: muestra una ayuda y la sintaxis del comando.
                    fichero_entrada: es el nombre del fichero del que se leen los datos de entrada.
@@ -466,7 +481,7 @@ public class Pasteleria {
         datos += ("\n.................... ");
         datos += (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()));
         datos += (" ....................\n");
-        datos += ("Salida producto de la ejecución de mochila_voraz:\n");
+        datos += ("Salida producto de la ejecución de pasteleria:\n");
         datos += (salida);
 
         fos.write(datos.getBytes());
@@ -602,7 +617,7 @@ public class Pasteleria {
 
         datos += "booAsignados:{";
         for(int i=0; i<nodo.booAsignados.length; i++)
-            datos += nodo.pasteleros[i]+(i==nodo.pasteleros.length-1?"":",");
+            datos += nodo.booAsignados[i]+(i==nodo.booAsignados.length-1?"":",");
         datos += "}  ";
 
         datos += "costeTotal:"+nodo.costeTotal+"   estOpt:"+nodo.estOpt+"   numNodo:"+nodo.numNodo;
@@ -616,13 +631,13 @@ public class Pasteleria {
      * @param pedidos lista de los pedidos.
      * @param num_nodo número del nodo a partir del cual calcular la estimación.
      * @param coste coste de los pedidos ya asignados.
-     * @return
+     * @return estimación optimista en función de los parámetros de entrada.
      */
     private static float estimacionOpt(float[][] tabla_costes, int[] pedidos, int num_nodo, float coste){
 
         float estimacion = coste, menorCoste;
 
-        for(int i=num_nodo; i<pedidos.length; i++){
+        for(int i=num_nodo+1; i<pedidos.length; i++){
             menorCoste = tabla_costes[0][pedidos[i]-1];
 
             for(int k=1; k<pedidos.length; k++)
@@ -641,13 +656,13 @@ public class Pasteleria {
      * @param pedidos lista de los pedidos.
      * @param num_nodo número del nodo a partir del cual calcular la estimación.
      * @param coste coste de los pedidos ya asignados.
-     * @return
+     * @return estimación pesimista en función de los parámetros de entrada.
      */
     private static float estimacionPes(float[][] tabla_costes, int[] pedidos, int num_nodo, float coste){
 
         float estimacion = coste, mayorCoste;
 
-        for(int i=num_nodo; i<pedidos.length; i++){
+        for(int i=num_nodo+1; i<pedidos.length; i++){
             mayorCoste = tabla_costes[0][pedidos[i]-1];
 
             for(int k=1; k<pedidos.length; k++)
@@ -661,21 +676,23 @@ public class Pasteleria {
     }
 
     /**
-     * Algoritmo voraz para la asignación de pasteleros a cada pedido con coste mínimo.
+     * Algoritmo de ramificación y poda para la asignación de pasteleros a cada pedido con coste mínimo.
      * @param tabla_costes tabla de costes de elaboración de cada pastel por cada pastelero.
      * @param pedidos lista de pedidos.
-     * @return array solución del algoritmo voraz, donde en la posición j del pedido está el pastelero i que lo elabora.
+     * @return array solución del algoritmo de ramificación y poda, donde en la posición j del pedido está el pastelero i que lo elabora.
      */
-    public static int[] asignaPasteleros(float[][] tabla_costes, int[] pedidos, int[] pasteleros_sol, float costeT_sol){
+    public static void asignaPasteleros(float[][] tabla_costes, int[] pedidos){
         trazar("SYSTEM: inicio de algoritmo de asignación de pasteleros a pedidos.",false);
         trazar("SYSTEM: se inician variables y el primer nodo.",false);
         Monticulo<Nodo> montC = new Monticulo<>(new Nodo());
-        Nodo[] monticulo = montC.getMonticulo();
+        ArrayList<Nodo> monticulo = montC.getMonticulo();
+        //Nodo[] monticulo = montC.getMonticulo();
         Nodo nodo = new Nodo(pedidos.length);
         Nodo hijo;
         float cota, estPes;
 
-        monticulo[0] = nodo;
+        montC.insertar(nodo,monticulo);
+        nodo.numNodo = -1;
         trazar("SYSTEM: se ha insertado el primer nodo en el montículo",false);
 
         nodo.estOpt = estimacionOpt(tabla_costes,pedidos,nodo.numNodo,nodo.costeTotal);
@@ -683,51 +700,80 @@ public class Pasteleria {
 
         cota = estimacionPes(tabla_costes,pedidos,nodo.numNodo,nodo.costeTotal);
         trazar("SYSTEM: la cota es: "+cota,false);
-
+int cont=0;
+int cont2=0;
+int montSize = 0;
         //Mientas el montículo no este vacío y la estimación optimista del primer elemento del montículo sea <= cota
         while( (!montC.elMonticuloEstaVacio(monticulo))
                 &&
-                (montC.mostrarCima(monticulo).estOpt <= cota)
-              )
+                (montC.mostrarCima(monticulo).estOpt <= cota) )
         {
-            nodo = montC.mostrarCima(monticulo);
-            hijo = new Nodo();
-            hijo.numNodo      = nodo.numNodo+1;
-            hijo.pasteleros   = nodo.pasteleros.clone();
-            hijo.booAsignados = nodo.booAsignados.clone();
+            cont++;//BORRAR
+            if(montSize < monticulo.size()) montSize = monticulo.size();//BORRAR
+            trazar("\n\nSYSTEM: se generan los nodos para cada pastelero no asignado.",false);
+            nodo              = montC.obtenerCima(monticulo);
+            trazar("SYSTEM: instantánea del primer nodo del montículo => "+instantanea(nodo),false);
 
-            for(int i=0; i<pedidos.length; i++){
-                if( !hijo.booAsignados[i] ){
-                    trazar("SYSTEM: no hay pastelero asignado para el pedido "+i+" del nodo "+hijo.numNodo,false);
+            ArrayList<Nodo> nodos = new ArrayList<>();
+            for(int i=0; i<nodo.booAsignados.length;i++){
+                if(nodo.booAsignados[i]==false){
+                    hijo              = new Nodo();
+                    hijo.numNodo      = nodo.numNodo+1;
+                    hijo.pasteleros   = nodo.pasteleros.clone();
+                    hijo.booAsignados = nodo.booAsignados.clone();
+                    nodos.add(hijo);
+                }
+            }
+
+            int i=0;
+            for(int n=0; n<nodos.size(); n++){
+                cont2++;//BORRAR
+                hijo = nodos.get(n);
+                trazar("\nSYSTEM: se examina el hijo ("+n+") => "+instantanea(hijo),false);
+
+                while( i<hijo.booAsignados.length && true){
+                    if(hijo.booAsignados[i]==false) break;
+                    else i++;
+                }
+
+                trazar("SYSTEM: el pastelero "+i+" está disponible.",false);
+
+                if(!hijo.booAsignados[i] ){
+                    trazar("SYSTEM: ("+i+") no hay pastelero asignado para el pedido "+hijo.numNodo,false);
                     hijo.pasteleros[hijo.numNodo] = i;
-                    hijo.booAsignados[i] = true;
-                    hijo.costeTotal = nodo.costeTotal + tabla_costes[i][pedidos[hijo.numNodo]];
-                    trazar("SYSTEM: instantánea del nodo hijo "+hijo.numNodo+" => "+instantanea(hijo),false);
+                    hijo.booAsignados[i]          = true;
+                    hijo.costeTotal               = nodo.costeTotal + tabla_costes[i][pedidos[hijo.numNodo]-1];
 
-                    if( hijo.numNodo == i ){
-
+                    if( hijo.numNodo == pedidos.length-1 ){
                         if( cota >= hijo.costeTotal ){
-                            pasteleros_sol = hijo.pasteleros;
+                            trazar("SYSTEM: cota:"+cota+" es "+( (cota> hijo.costeTotal)?"mayor que":"igual al" )+" costeTotal:"+hijo.costeTotal,false);
+                            trazar("SYSTEM: se actualiza la solución, el coste y la cota.",false);
+                            pasteleros_sol = hijo.pasteleros.clone();
                             costeT_sol     = hijo.costeTotal;
-                            cota           = hijo.costeTotal;
+                            cota           = costeT_sol;
                         }
-
                     }
                     else //Solución no completa
                     {
-
-
-
+                        trazar("SYSTEM: solución no completa.",false);
+                        hijo.estOpt = estimacionOpt(tabla_costes,pedidos,hijo.numNodo,hijo.costeTotal);
+                        if(hijo.estOpt < cota)montC.insertar(hijo.clonarNodo(), monticulo);
+                        trazar("SYSTEM: se actualiza la estimación optimista a " + hijo.estOpt + " y se inserta el nodo en el montículo", false);
+                        estPes = estimacionPes(tabla_costes, pedidos, hijo.numNodo, hijo.costeTotal);
+                        trazar("SYSTEM: cota:" + cota + " " + ((cota > estPes) ? "" : "no") + " es mayor que la estPes:" + estPes, false);
+                        if (cota > estPes)
+                            cota = estPes;
                     }
-
+                    //hijo.booAsignados[i] = false;
+                    trazar("SYSTEM: instantánea del nodo hijo => "+instantanea(hijo),false);
                 }
+                i++;
             }
+
         }
 
-
-        return montC.mostrarCima(monticulo).pasteleros;
+        System.out.println("FIN => montSize:"+montSize+"   cont:"+cont+"   cont2:"+cont2+"    total:"+(cont+cont2));
     }
-
 
 }
 
@@ -786,7 +832,7 @@ class Nodo implements Comparable<Nodo>{
         this.costeTotal   = 0f;
         this.estOpt       = 0f;
         for(int i=0; i<tamano_pedidos; i++){
-            this.pasteleros[i]   = 0;
+            this.pasteleros[i]   = -1;
             this.booAsignados[i] = false;
         }
     }
@@ -805,6 +851,20 @@ class Nodo implements Comparable<Nodo>{
         this.numNodo      = numNodo;
         this.costeTotal   = numNodo;
         this.estOpt       = estOpt;
+    }
+
+    /**
+     * Clona el nodo.
+     * @return clon del nodo.
+     */
+    public Nodo clonarNodo(){
+        Nodo clon         = new Nodo();
+        clon.pasteleros   = this.pasteleros.clone();
+        clon.booAsignados = this.booAsignados.clone();
+        clon.numNodo      = this.numNodo;
+        clon.costeTotal   = this.costeTotal;
+        clon.estOpt       = this.estOpt;
+        return clon;
     }
 
     /**
