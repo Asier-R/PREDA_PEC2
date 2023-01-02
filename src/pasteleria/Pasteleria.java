@@ -560,10 +560,11 @@ public class Pasteleria {
                     float coste = entrada.nextFloat();
                     if (coste <= 0) throw new Exception("ERROR: coste menor o igual a cero.");
                     tablaCostes[i][k] = coste;
-                    System.out.println("SYSTEM: se ha introducido el coste "+coste+" para el paste "+(k+1)+" del pastelero "+(i+1));
+                    System.out.println("SYSTEM: se ha introducido el coste "+coste+" para el pastel "+(k+1)+" del pastelero "+(i+1));
                     k++;
                     entrada.nextLine();
                 }
+                k=0;
                 i++;
             } catch (Exception e) {
                 decidirSiFinalizarEjecucion(entrada, e);
