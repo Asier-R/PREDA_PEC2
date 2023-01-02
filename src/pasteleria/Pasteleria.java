@@ -331,7 +331,7 @@ public class Pasteleria {
         float[][] tablaCostes;
 
         //Estructura del fichero
-        Pattern pattern = Pattern.compile("^(?:[1-9]+)\\n(?:[1-9]+)\\n(?:[1-9]+(?:-[1-9]+)*)\\n(?:(?:[0-9]+(?:\\.[0-9]+)?)+(?: (?:[0-9]+(?:\\.[0-9]+)?)+)*\\n?)+$", Pattern.MULTILINE);
+        Pattern pattern = Pattern.compile("^(?:[0-9]+)\\n(?:[0-9]+)\\n(?:[0-9]+(?:-[0-9]+)*)\\n(?:(?:[0-9]+(?:\\.[0-9]+)?)+(?: (?:[0-9]+(?:\\.[0-9]+)?)+)*\\n?)+$", Pattern.MULTILINE);
         Matcher matcher = pattern.matcher(datos);
 
         if(matcher.find())
@@ -349,7 +349,7 @@ public class Pasteleria {
         String[] arrayDatos = datos.split("\n");
 
         //Número de pasteleros
-        pattern = Pattern.compile("^[1-9]+$");
+        pattern = Pattern.compile("^[0-9]+$");
         matcher = pattern.matcher(arrayDatos[0]);
 
         if(matcher.find())
@@ -360,7 +360,7 @@ public class Pasteleria {
         numPasteleros = Integer.parseInt(arrayDatos[0]);
 
         //Número de tipos de pasteles
-        pattern = Pattern.compile("^[1-9]+$");
+        pattern = Pattern.compile("^[0-9]+$");
         matcher = pattern.matcher(arrayDatos[1]);
 
         if(matcher.find())
@@ -372,7 +372,7 @@ public class Pasteleria {
 
         //Datos de los pasteleros
         if(arrayDatos.length-3 != numPasteleros)
-            throw new FileSystemException("ERROR: no se ha introducido correctamente los datos de los pasteleros, debería haber solo "+numPasteleros+" lineas => "+arrayDatos[0]);
+            throw new FileSystemException("ERROR: no se ha introducido correctamente los datos de los pasteleros, debería haber "+numPasteleros+" lineas y hay "+(arrayDatos.length-3));
 
         pattern = Pattern.compile("^(?:[0-9]+(?:\\.[0-9]+)?)+(?: (?:[0-9]+(?:\\.[0-9]+)?)+)*$");
         tablaCostes = new float[numPasteleros][tiposDePasteles];
@@ -385,8 +385,8 @@ public class Pasteleria {
 
             String[] costes = arrayDatos[i].split(" ");
 
-            if(costes.length > tiposDePasteles)
-                throw new FileSystemException("ERROR: los costes por pastel del pastelero "+(i-2)+" contiene mas datos que tipos de pasteles => "+arrayDatos[i]);
+            if(costes.length != tiposDePasteles)
+                throw new FileSystemException("ERROR: los costes por pastel del pastelero "+(i-2)+" contiene "+( (costes.length > tiposDePasteles)?"mas":"menos" )+" datos que tipos de pasteles => "+arrayDatos[i]);
 
             for (int k=0; k<costes.length; k++)
                 tablaCostes[i-3][k] = Float.parseFloat(costes[k]);
@@ -397,7 +397,7 @@ public class Pasteleria {
         trazar("SYSTEM: los datos de los pasteleros son correctos.",false);
 
         //Pedidos
-        pattern = Pattern.compile("^[1-9]+(?:-[1-9]+)*$");
+        pattern = Pattern.compile("^[0-9]+(?:-[0-9]+)*$");
         matcher = pattern.matcher(arrayDatos[2]);
 
         if(matcher.find())
@@ -740,7 +740,7 @@ public class Pasteleria {
                     {
                         trazar("SYSTEM: solución no completa.",false);
                         hijo.estOpt = estimacionOpt(tabla_costes,pedidos,hijo.numNodo,hijo.costeTotal);
-                        if(hijo.estOpt < cota)montC.insertar(hijo.clonarNodo(), monticulo);
+                        if(hijo.estOpt <= cota)montC.insertar(hijo.clonarNodo(), monticulo);
                         trazar("SYSTEM: la estimación optimista es " + hijo.estOpt + " y la cota es "+cota+". "+( (hijo.estOpt < cota)?"Se":"No se" )+" inserta el nodo en el montículo", false);
                         estPes = estimacionPes(tabla_costes, pedidos, hijo.numNodo, hijo.costeTotal);
                         trazar("SYSTEM: cota:" + cota + " " + ((cota > estPes) ? "" : "no") + " es mayor que la estPes:" + estPes, false);
