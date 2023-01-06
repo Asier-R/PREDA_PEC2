@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -100,7 +101,7 @@ public class Pasteleria {
 
             String salida = "";
             for (int i=0; i<pasteleros_sol.length; i++) {
-                salida += pasteleros_sol[i]+(i==pasteleros_sol.length-1?"\n":"-");
+                salida += (pasteleros_sol[i]+1)+(i==pasteleros_sol.length-1?"\n":"-");
             }
             salida += costeT_sol;
 
@@ -599,6 +600,7 @@ public class Pasteleria {
      * @param nodo array a partir del cual crear un literal.
      */
     private static String instantanea(Nodo nodo){
+        if(!trazasActivas) return "No se traza";
         String datos = "pasteleros:{";
         for(int i=0; i<nodo.pasteleros.length; i++)
             datos += nodo.pasteleros[i]+(i==nodo.pasteleros.length-1?"":",");
@@ -856,6 +858,6 @@ class Nodo implements Comparable<Nodo>{
      */
     @Override
     public int compareTo(Nodo nodo) {
-        return Float.compare(nodo.costeTotal,this.costeTotal);
+        return Float.compare(nodo.estOpt,this.estOpt);
     }
 }
