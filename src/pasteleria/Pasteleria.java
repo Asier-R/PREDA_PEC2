@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
