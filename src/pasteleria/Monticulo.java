@@ -59,7 +59,7 @@ public class Monticulo <T extends Comparable<T>>{
      */
     @SuppressWarnings("unchecked")
     public ArrayList<T> crearMonticuloVacio(){
-        return new ArrayList<T>();
+        return new ArrayList<T>(0);
     }
 
     /**
@@ -92,9 +92,9 @@ public class Monticulo <T extends Comparable<T>>{
      * Reubica el elemento 'i' del vector, en caso de que este sea mayor que el padre, hasta que esté correctamente
      * situado en el montículo y se haya restablecido la propiedad de montículo.
      * Se utiliza para la inserción de un elemento nuevo en el montículo.
-     * Complejidad temporal lineal O(n/2). Cada iteración del bucle corresponde a un nivel del montículo y cada nivel
-     * tiene solo dos elementos. Ambos elementos se exploran en la misma iteración, por lo que el bucle será de tamaño
-     * n/2, donde 'n' es la cantidad de elementos en el montículo.
+     * Complejidad temporal logarítmico O(log(n)). Cada iteración del bucle corresponde a un nivel del montículo y cada
+     * nivel tiene solo dos elementos. En cada iteración se compara el elemento del nivel de ese momento con su elemento
+     * padre, por lo que el bucle, en el caso peor, será de tamaño log(n), donde 'n' es la cantidad de elementos en el montículo.
      * @see Monticulo#intercambiar
      * @param monticulo montículo sobre el que se realizará la acción flotar.
      * @param elemento posición en el montículo del elemento sobre el que se realizará la acción flotar.
