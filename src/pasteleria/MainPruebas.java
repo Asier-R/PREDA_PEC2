@@ -1,10 +1,8 @@
 package pasteleria;
 
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MainPruebas {
     public static void main(String[] args) {
@@ -15,8 +13,8 @@ public class MainPruebas {
 
             ArrayList<String[]> casosPrueba = new ArrayList<>(100);
 
-            //casosPrueba.add(new String[] {"-t",entrada,salida});
-            casosPrueba.add(new String[] {entrada,salida});
+            casosPrueba.add(new String[] {"-t",entrada,salida});
+            //casosPrueba.add(new String[] {entrada,salida});
 
             casosPrueba.forEach(caso -> {
                 //System.out.println("CASO: "+ Arrays.stream(caso).toList().toString());

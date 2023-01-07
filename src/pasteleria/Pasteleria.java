@@ -675,7 +675,7 @@ public class Pasteleria {
     public static void asignaPasteleros(float[][] tabla_costes, int[] pedidos){
         trazar("SYSTEM: inicio de algoritmo de asignación de pasteleros a pedidos.",false);
         trazar("SYSTEM: se inician variables y el primer nodo.",false);
-        Monticulo<Nodo> montC = new Monticulo<>(new Nodo());
+        Monticulo<Nodo> montC = new Monticulo<>();
         ArrayList<Nodo> monticulo = montC.getMonticulo();
 
         Nodo nodo = new Nodo(pedidos.length);

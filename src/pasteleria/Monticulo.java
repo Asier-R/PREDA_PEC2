@@ -1,6 +1,5 @@
 package pasteleria;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -15,22 +14,21 @@ import java.util.ArrayList;
 public class Monticulo <T extends Comparable<T>>{
 
     /**
-     * Variable array que contendrá el montículo de tipo T.
+     * Variable que contendrá el montículo de tipo T.
      */
     private ArrayList<T> vector;
 
     /**
-     * Si no se dispone de un array se inicializa la clase y el montículo vacío.
+     * Si no se dispone de un ArrayList, se inicializa la clase y el montículo vacío.
      * @see Monticulo#crearMonticuloVacio
-     * @param clase instancia de la clase Comparable que se va a utilizar para crear el montículo.
      */
-    public Monticulo(T clase){
+    public Monticulo(){
         this.vector = crearMonticuloVacio();
     }
 
     /**
-     * Transforma el array de entrada en un montículo.
-     * El tamaño máximo no puede ser menor al del array de entrada.
+     * Transforma el arraylist de entrada en un montículo.
+     * El tamaño máximo no puede ser menor al del ArrayList de entrada.
      * @see Monticulo#creaMonticuloLineal
      * @param vector vector sobre el cual se va a crear el montículo.
      * @throws IllegalArgumentException si el vector de entrada tiene un tamaño menor a cero.
@@ -44,7 +42,7 @@ public class Monticulo <T extends Comparable<T>>{
     }
 
     /**
-     * Devuelve el montículo creado en el constructor de un solo parámetro.
+     * Devuelve el montículo creado en el constructor.
      * @return montículo generado en el constructor.
      */
     public ArrayList<T> getMonticulo(){
@@ -66,10 +64,10 @@ public class Monticulo <T extends Comparable<T>>{
 
     /**
      * Crea un montículo vacío de tamaño n > 1.
-     * Complejidad temporal lienal O(n). La información obtenida en internet sugiere que la complejidad temporal estaría
+     * Complejidad temporal lineal O(n). La información obtenida en internet sugiere que la complejidad temporal estaría
      * en torno a O(n), puesto que la máquina virtual tiene que reservar memoria e introducir el valor null en cada
      * posición del array. Para simplificar el cálculo de la complejidad, y al tener un tamaño n, se asumirá que el
-     * coste es de la creación del montículo es lienal.
+     * coste es de la creación del montículo es lineal.
      * @param tamano tamaño del montículo a crear. Si no se indica tamaño, se creará de tamaño 1.
      * @throws IllegalArgumentException si el vector de entrada tiene un tamaño menor a cero.
      * @return una nueva instancia de un montículo de tamaño n.
@@ -82,7 +80,7 @@ public class Monticulo <T extends Comparable<T>>{
 
     /**
      * El montículo está vacío si tiene un tamaño de 0 o no tiene elementos.
-     * Complejidad temporal lineal O(n) en el caso peor.
+     * Complejidad temporal constante O(1).
      * @param monticulo montículo que se inspeccionará para ver si está vacío.
      * @return true si montículo vacío.
      */
@@ -160,20 +158,21 @@ public class Monticulo <T extends Comparable<T>>{
 
     /**
      * Inserta un elemento en el montículo y lo flota hasta restaurar la propiedad de montículo.
-     * Complejidad temporal lineal O(n). No se añaden espacios (nulos) adicionales al montículo para simplificar el
-     * algoritmo de flotar y hundir. Aunque esto implica que siempre que se inserta un elemento se hace en un tiempo O(n).
+     * Aunque un ArrayList dispone de una capacidad adicional superior a la indicada en su creación y, por lo tanto, cada
+     * vez que se inserta un item no es necesario crear un nuevo ArrayList de mayor capacidad, con el fin de simplificar
+     * cálculos, se asume una complejidad temporal lineal O(n).
      * @see Monticulo#crearMonticuloVacio(int)
      * @see Monticulo#flotar
      * @param elemento elemento a insertar en montículo.
      * @param monticulo montículo sobre el que se realiza la acción insertar.
-     * @throws IllegalArgumentException si el elemento a insertar es nulo.
+     * @throws IllegalArgumentException si el elemento a insertar es nulo o el montículo es nulo.
      * @return montículo de tamaño n+1 con el elemento nuevo.
      */
     public void insertar(T elemento, ArrayList<T> monticulo){
         if(elemento == null) throw new IllegalArgumentException("ERROR: no se puede insertar un elemento nulo.");
         if(monticulo == null) throw new IllegalArgumentException("ERROR: el montículo es nulo.");
-        monticulo.add(elemento);
-        flotar(monticulo, monticulo.size()-1);
+        monticulo.add(elemento); // O(n)
+        flotar(monticulo, monticulo.size()-1); // O(n)
     }
 
     /**
@@ -197,8 +196,8 @@ public class Monticulo <T extends Comparable<T>>{
     public T obtenerCima(ArrayList<T> monticulo){
         T cima = mostrarCima(monticulo); //Guardamos la cima O(1)
         //Se elimina cima, se pone el último elemento en cabeza y se recompone montículo con hundir.
-        monticulo.set(0,monticulo.get(monticulo.size()-1));
-        monticulo.remove(monticulo.size()-1);
+        monticulo.set(0,monticulo.get(monticulo.size()-1)); // O(1)
+        monticulo.remove(monticulo.size()-1); // O(1) Al ser el último elemento.
         if(monticulo.size()>1) hundir(monticulo,0); // O(log(n))
         return cima;
     }
@@ -211,7 +210,7 @@ public class Monticulo <T extends Comparable<T>>{
      */
     public void creaMonticuloLineal(ArrayList<T> vector){
         for(int i=( (vector.size()-1)/2 ); i>=0;i--)
-            hundir(vector, i);
+            hundir(vector, i); // O(log(n))
     }
 
     /**
