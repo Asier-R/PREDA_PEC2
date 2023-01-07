@@ -166,7 +166,6 @@ public class Monticulo <T extends Comparable<T>>{
      * @param elemento elemento a insertar en montículo.
      * @param monticulo montículo sobre el que se realiza la acción insertar.
      * @throws IllegalArgumentException si el elemento a insertar es nulo o el montículo es nulo.
-     * @return montículo de tamaño n+1 con el elemento nuevo.
      */
     public void insertar(T elemento, ArrayList<T> monticulo){
         if(elemento == null) throw new IllegalArgumentException("ERROR: no se puede insertar un elemento nulo.");

@@ -669,7 +669,6 @@ public class Pasteleria {
      * Algoritmo de ramificación y poda para la asignación de pasteleros a cada pedido con coste mínimo.
      * @param tabla_costes tabla de costes de elaboración de cada pastel por cada pastelero.
      * @param pedidos lista de pedidos.
-     * @return array solución del algoritmo de ramificación y poda, donde en la posición j del pedido está el pastelero i que lo elabora.
      */
     public static void asignaPasteleros(float[][] tabla_costes, int[] pedidos){
         trazar("SYSTEM: inicio de algoritmo de asignación de pasteleros a pedidos.",false);
