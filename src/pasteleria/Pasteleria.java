@@ -764,7 +764,7 @@ public class Pasteleria {
  * UNED PREDA 2022/2023 - PEC2 - Oracle OpenJDK version 19.
  * @author Asier Rodríguez López
  * @version 1.0
- * @since 1.0
+ * @since 2.0
  */
 class Nodo implements Comparable<Nodo>{
 
