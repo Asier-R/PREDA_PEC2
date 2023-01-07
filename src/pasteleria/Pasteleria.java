@@ -698,7 +698,7 @@ public class Pasteleria {
         {
 
             trazar("\n\nSYSTEM: se generan los nodos para cada pastelero no asignado.",false);
-            nodo              = montC.obtenerCima(monticulo);
+            nodo = montC.obtenerCima(monticulo);
             trazar("SYSTEM: instantánea del primer nodo del montículo => "+instantanea(nodo),false);
 
             ArrayList<Nodo> nodos = new ArrayList<>();
@@ -734,7 +734,7 @@ public class Pasteleria {
                         if( cota >= hijo.costeTotal ){
                             trazar("SYSTEM: cota:"+cota+" es "+( (cota> hijo.costeTotal)?"mayor que":"igual al" )+" costeTotal:"+hijo.costeTotal,false);
                             trazar("SYSTEM: se actualiza la solución, el coste y la cota.",false);
-                            pasteleros_sol = hijo.pasteleros.clone();
+                            pasteleros_sol = hijo.pasteleros;
                             costeT_sol     = hijo.costeTotal;
                             cota           = costeT_sol;
                         }
@@ -743,7 +743,7 @@ public class Pasteleria {
                     {
                         trazar("SYSTEM: solución no completa.",false);
                         hijo.estOpt = estimacionOpt(tabla_costes,pedidos,hijo.numNodo,hijo.costeTotal);
-                        if(hijo.estOpt <= cota)montC.insertar(hijo.clonarNodo(), monticulo);
+                        if(hijo.estOpt <= cota)montC.insertar(hijo, monticulo);
                         trazar("SYSTEM: la estimación optimista es " + hijo.estOpt + " y la cota es "+cota+". "+( (hijo.estOpt < cota)?"Se":"No se" )+" inserta el nodo en el montículo", false);
                         estPes = estimacionPes(tabla_costes, pedidos, hijo.numNodo, hijo.costeTotal);
                         trazar("SYSTEM: cota:" + cota + " " + ((cota > estPes) ? "" : "no") + " es mayor que la estPes:" + estPes, false);

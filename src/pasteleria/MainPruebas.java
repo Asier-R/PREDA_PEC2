@@ -2,6 +2,7 @@ package pasteleria;
 
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -14,27 +15,19 @@ public class MainPruebas {
 
             ArrayList<String[]> casosPrueba = new ArrayList<>(100);
 
-
-            //casosPrueba.add(new String[] {entrada});
-            //casosPrueba.add(new String[] {entrada,"-t"});
-            //casosPrueba.add(new String[] {entrada,"-h"});
-            //casosPrueba.add(new String[] {entrada,"-t","-h"});
-            //casosPrueba.add(new String[] {entrada,salida,"-t","-h"});
             //casosPrueba.add(new String[] {"-t",entrada,salida});
             casosPrueba.add(new String[] {entrada,salida});
-            //casosPrueba.add(new String[] {entrada,salida});
 
             casosPrueba.forEach(caso -> {
-                System.out.println("CASO: "+ Arrays.stream(caso).toList().toString());
+                //System.out.println("CASO: "+ Arrays.stream(caso).toList().toString());
+                System.out.println("TIEMPO-INI: "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new java.util.Date()));
                 pasteleria.Pasteleria.main(caso);
+                System.out.println("TIEMPO-FIN: "+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new java.util.Date()));
                 pasteleria.Pasteleria.existeFicheroEntrada = false;
                 pasteleria.Pasteleria.existeFicheroSalida = false;
                 pasteleria.Pasteleria.trazasActivas = false;
                 System.out.println("-----------------------------------------------------------------------------------");
             });
-
-
-            //Pasteleria.main(new String[] {"-t","-h",fichero,ficheroSal});
 
         }catch(Exception e){
             System.out.println(e.getMessage());
