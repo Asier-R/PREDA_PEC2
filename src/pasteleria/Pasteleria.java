@@ -699,28 +699,14 @@ public class Pasteleria {
             nodo = montC.obtenerCima(monticulo);
             trazar("SYSTEM: instantánea del primer nodo del montículo => "+instantanea(nodo),false);
 
-            ArrayList<Nodo> nodos = new ArrayList<>();
-            for(int i=0; i<nodo.booAsignados.length;i++){
-                if(nodo.booAsignados[i]==false){
-                    hijo              = new Nodo();
-                    hijo.numNodo      = nodo.numNodo+1;
-                    hijo.pasteleros   = nodo.pasteleros.clone();
-                    hijo.booAsignados = nodo.booAsignados.clone();
-                    nodos.add(hijo);
-                }
-            }
+            hijo              = new Nodo();
+            hijo.numNodo      = nodo.numNodo+1;
+            hijo.pasteleros   = nodo.pasteleros.clone();
+            hijo.booAsignados = nodo.booAsignados.clone();
 
             int i=0;
-            for(int n=0; n<nodos.size(); n++){
-                hijo = nodos.get(n);
+            for(int n=0; n<nodo.pasteleros.length; n++){
                 trazar("\nSYSTEM: se examina el hijo ("+n+") => "+instantanea(hijo),false);
-
-                while( i<hijo.booAsignados.length && true){
-                    if(hijo.booAsignados[i]==false) break;
-                    else i++;
-                }
-
-                trazar("SYSTEM: el pastelero "+i+" está disponible.",false);
 
                 if(!hijo.booAsignados[i] ){
                     trazar("SYSTEM: se asigna el pastelero "+i+" al pedido "+hijo.numNodo,false);
@@ -741,14 +727,15 @@ public class Pasteleria {
                     {
                         trazar("SYSTEM: solución no completa.",false);
                         hijo.estOpt = estimacionOpt(tabla_costes,pedidos,hijo.numNodo,hijo.costeTotal);
-                        if(hijo.estOpt <= cota)montC.insertar(hijo, monticulo);
-                        trazar("SYSTEM: la estimación optimista es " + hijo.estOpt + " y la cota es "+cota+". "+( (hijo.estOpt < cota)?"Se":"No se" )+" inserta el nodo en el montículo", false);
+                        if(hijo.estOpt <= cota)montC.insertar(hijo.clonarNodo(), monticulo);
+                        trazar("SYSTEM: la estimación optimista es " + hijo.estOpt + " y la cota es "+cota+". "+( (hijo.estOpt <= cota)?"Se":"No se" )+" inserta el nodo en el montículo", false);
                         estPes = estimacionPes(tabla_costes, pedidos, hijo.numNodo, hijo.costeTotal);
                         trazar("SYSTEM: cota:" + cota + " " + ((cota > estPes) ? "" : "no") + " es mayor que la estPes:" + estPes, false);
                         if (cota > estPes)
                             cota = estPes;
                     }
                     trazar("SYSTEM: instantánea del nodo hijo => "+instantanea(hijo),false);
+                    hijo.booAsignados[i] = false;
                 }
                 i++;
             }
